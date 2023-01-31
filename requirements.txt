@@ -1,0 +1,8 @@
+docx-mailmerge
+openpyxl
+lxml
+python-docx
+python-gnupg
+qrcode[pil]
+docx2pdf
+wxPython
