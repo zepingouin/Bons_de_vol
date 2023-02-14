@@ -240,6 +240,8 @@ class TabVol(wx.Panel):
         sizer = wx.GridBagSizer(5, 5)
         self.SetSizer(sizer)
 
+        self.timer = wx.Timer(self)
+
         self.NumeroBon = ID_Generator(2, 5)
         labelBon = wx.StaticText(self, label='Bon n° ')
         labelNumero = wx.StaticText(self, label=' '+self.NumeroBon+' ')
@@ -551,99 +553,101 @@ class TabVol(wx.Panel):
 
     def OnBoutonValider(self, event):
         """Lancement de la création du bon de vol."""
-        bon = self.NumeroBon
-        nom1 = self.champNom1.GetLineText(0)
-        prenom1 = self.champPrenom1.GetLineText(0)
-        typebon = self.name
-        if typebon == 'vd':
-            nom2 = self.champNom2.GetLineText(0)
-            prenom2 = self.champPrenom2.GetLineText(0)
-            nom3 = self.champNom3.GetLineText(0)
-            prenom3 = self.champPrenom3.GetLineText(0)
-        else:
-            nom2 = ''
-            prenom2 = ''
-            nom3 = ''
-            prenom3 = ''
-        autoparent = self.champParent.GetValue()
-        payeur = self.champPayeur.GetLineText(0)
-        datePaiement = self.choixDatePaiement.GetValue()
-        choixPaiement = self.comboPaiement.GetStringSelection()
-        if choixPaiement == 'Chèque':
-            numcheque = self.champCheque.GetLineText(0)
-            banque = self.champBanque.GetLineText(0)
-        else:
-            numcheque = ''
-            banque = ''
-        pilote1 = self.comboPilote1.GetStringSelection()
-        avion1 = self.comboAvion1.GetStringSelection()
-        date1 = self.choixDateVol1.GetValue()
-        heure1 = self.choixHeureVol1.GetValue()
-        temps1 = self.choixTempsVol1.GetValue()
-        aujourdhui = wx.DateTime.Now().GetDateOnly()
-        if typebon == 'vi':
-            pilote2 = self.comboPilote2.GetStringSelection()
-            avion2 = self.comboAvion2.GetStringSelection()
-            date2 = self.choixDateVol2.GetValue()
-            heure2 = self.choixHeureVol2.GetValue()
-            temps2 = self.choixTempsVol2.GetValue()
-            cours = self.rboxCours.GetStringSelection()
-            if cours == '1':
-                tarif = config.getint('Tarifs', 'vol1')
-            elif cours == '1+1':
-                tarif = config.getint('Tarifs', 'vol2')
+        if not self.timer.IsRunning():
+            self.timer.StartOnce(30000)
+            bon = self.NumeroBon
+            nom1 = self.champNom1.GetLineText(0)
+            prenom1 = self.champPrenom1.GetLineText(0)
+            typebon = self.name
+            if typebon == 'vd':
+                nom2 = self.champNom2.GetLineText(0)
+                prenom2 = self.champPrenom2.GetLineText(0)
+                nom3 = self.champNom3.GetLineText(0)
+                prenom3 = self.champPrenom3.GetLineText(0)
             else:
-                tarif = config.getint('Tarifs', 'vol1') + config.getint('Tarifs', 'vol2')
-            if cours == '1' or cours == '1+1':
-                # Mise à zéro si on a une date de vol le même jour...
-                if date1.GetDateOnly() == aujourdhui:
-                    pilote1 = ''
-                    avion1 = ''
-                    date1 = ''
-                    heure1 = ''
-                    temps1 = ''
-                pilote2 = ''
-                avion2 = ''
-                date2 = ''
-                heure2 = ''
-                temps2 = ''
+                nom2 = ''
+                prenom2 = ''
+                nom3 = ''
+                prenom3 = ''
+            autoparent = self.champParent.GetValue()
+            payeur = self.champPayeur.GetLineText(0)
+            datePaiement = self.choixDatePaiement.GetValue()
+            choixPaiement = self.comboPaiement.GetStringSelection()
+            if choixPaiement == 'Chèque':
+                numcheque = self.champCheque.GetLineText(0)
+                banque = self.champBanque.GetLineText(0)
             else:
-                # Mise à zéro si on a une date de vol le même jour...
-                if date1.GetDateOnly() == aujourdhui:
-                    pilote1 = ''
-                    avion1 = ''
-                    date1 = ''
-                    heure1 = ''
-                    temps1 = ''
-                # Mise à zéro si on a une date de vol le même jour...
-                if date2.GetDateOnly() == aujourdhui:
+                numcheque = ''
+                banque = ''
+            pilote1 = self.comboPilote1.GetStringSelection()
+            avion1 = self.comboAvion1.GetStringSelection()
+            date1 = self.choixDateVol1.GetValue()
+            heure1 = self.choixHeureVol1.GetValue()
+            temps1 = self.choixTempsVol1.GetValue()
+            aujourdhui = wx.DateTime.Now().GetDateOnly()
+            if typebon == 'vi':
+                pilote2 = self.comboPilote2.GetStringSelection()
+                avion2 = self.comboAvion2.GetStringSelection()
+                date2 = self.choixDateVol2.GetValue()
+                heure2 = self.choixHeureVol2.GetValue()
+                temps2 = self.choixTempsVol2.GetValue()
+                cours = self.rboxCours.GetStringSelection()
+                if cours == '1':
+                    tarif = config.getint('Tarifs', 'vol1')
+                elif cours == '1+1':
+                    tarif = config.getint('Tarifs', 'vol2')
+                else:
+                    tarif = config.getint('Tarifs', 'vol1') + config.getint('Tarifs', 'vol2')
+                if cours == '1' or cours == '1+1':
+                    # Mise à zéro si on a une date de vol le même jour...
+                    if date1.GetDateOnly() == aujourdhui:
+                        pilote1 = ''
+                        avion1 = ''
+                        date1 = ''
+                        heure1 = ''
+                        temps1 = ''
                     pilote2 = ''
                     avion2 = ''
                     date2 = ''
                     heure2 = ''
                     temps2 = ''
-        else:
-            tarif = None
-            cours = ''
-            pilote2 = ''
-            avion2 = ''
-            date2 = ''
-            heure2 = ''
-            temps2 = ''
-        cheminGPG = config['Crypto']['logiciel']
-        clef = config['Crypto']['clefid']
-        cheminVD = config['Fichiers']['dossiervd']
-        classeurVD = config['Fichiers']['classeurvd']
-        modeleVD = config['Fichiers']['modelevd']
-        cheminVI = config['Fichiers']['dossiervi']
-        classeurVI = config['Fichiers']['classeurvi']
-        modeleVI = config['Fichiers']['modelevi']
-        genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
-            autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
-            date1, heure1, temps1, pilote1, avion1, cours,
-            date2, heure2, temps2, pilote2, avion2, tarif,
-            cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-            cheminGPG, clef)
+                else:
+                    # Mise à zéro si on a une date de vol le même jour...
+                    if date1.GetDateOnly() == aujourdhui:
+                        pilote1 = ''
+                        avion1 = ''
+                        date1 = ''
+                        heure1 = ''
+                        temps1 = ''
+                    # Mise à zéro si on a une date de vol le même jour...
+                    if date2.GetDateOnly() == aujourdhui:
+                        pilote2 = ''
+                        avion2 = ''
+                        date2 = ''
+                        heure2 = ''
+                        temps2 = ''
+            else:
+                tarif = None
+                cours = ''
+                pilote2 = ''
+                avion2 = ''
+                date2 = ''
+                heure2 = ''
+                temps2 = ''
+            cheminGPG = config['Crypto']['logiciel']
+            clef = config['Crypto']['clefid']
+            cheminVD = config['Fichiers']['dossiervd']
+            classeurVD = config['Fichiers']['classeurvd']
+            modeleVD = config['Fichiers']['modelevd']
+            cheminVI = config['Fichiers']['dossiervi']
+            classeurVI = config['Fichiers']['classeurvi']
+            modeleVI = config['Fichiers']['modelevi']
+            genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
+                autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
+                date1, heure1, temps1, pilote1, avion1, cours,
+                date2, heure2, temps2, pilote2, avion2, tarif,
+                cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
+                cheminGPG, clef)
 
     def OverBoutonValider(self, event):
         """Activation sur la présence de la souris."""
@@ -759,7 +763,7 @@ of this license document, but changing it is not allowed.
         logo = config['Images']['logo']
         info.SetIcon(wx.Icon(logo))
         info.SetName('Bons ACD')
-        info.SetVersion('1.0')
+        info.SetVersion('1.1')
         info.SetDescription(description)
         info.SetCopyright('(C) 2023 Gérard Parat')
         info.SetWebSite('http://www.aero-club-dreux.com')
