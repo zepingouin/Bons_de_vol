@@ -763,7 +763,7 @@ of this license document, but changing it is not allowed.
         logo = config['Images']['logo']
         info.SetIcon(wx.Icon(logo))
         info.SetName('Bons ACD')
-        info.SetVersion('1.1')
+        info.SetVersion('1.2')
         info.SetDescription(description)
         info.SetCopyright('(C) 2023 Gérard Parat')
         info.SetWebSite('http://www.aero-club-dreux.com')

@@ -109,12 +109,14 @@ def genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
     
     # Initialisation des données
     NumeroBon = bon
-    Nom1 = nom1
-    Prenom1 = prenom1
-    Nom2 = nom2
-    Prenom2 = prenom2
-    Nom3 = nom3
-    Prenom3 = prenom3
+    # Mise en capitale du nom de famille
+    Nom1 = str.upper(nom1)
+    Nom2 = str.upper(nom2)
+    Nom3 = str.upper(nom3)
+    # Mise en capitale de la première lettre du prénom
+    Prenom1 = str.title(prenom1)
+    Prenom2 = str.title(prenom2)
+    Prenom3 = str.title(prenom3)
     if autoparent:
         AutoParent = 'OUI'
     else:
@@ -153,12 +155,12 @@ def genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
     'Numéro de bon : ' + NumeroBon + '\n'
     if typebon == 'vd':
         TexteBonVol += \
-        'Passager n° 1 : ' + str.upper(Nom1) + ' ' + Prenom1 + '\n' + \
-        'Passager n° 2 : ' + str.upper(Nom2) + ' ' + Prenom2 + '\n' + \
-        'Passager n° 3 : ' + str.upper(Nom3) + ' ' + Prenom3 + '\n'
+        'Passager n° 1 : ' + Nom1 + ' ' + Prenom1 + '\n' + \
+        'Passager n° 2 : ' + Nom2 + ' ' + Prenom2 + '\n' + \
+        'Passager n° 3 : ' + Nom3 + ' ' + Prenom3 + '\n'
     else:
         TexteBonVol += \
-        'Nom : ' + str.upper(Nom1) + '\n' + \
+        'Nom : ' + Nom1 + '\n' + \
         'Prénom : ' + Prenom1 + '\n'
     TexteBonVol += \
     'Autorisation parentale : ' + AutoParent + '\n'
@@ -211,7 +213,7 @@ def genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
     signed_data = gpg.sign(TexteBonVol, keyid=clef)
     
     # Nom des fichiers
-    NomFichier = os.path.join(cheminVol, DateFichier + '-' + str.upper(Nom1) + '-' + Prenom1 + '-' + NumeroBon)
+    NomFichier = os.path.join(cheminVol, DateFichier + '-' + Nom1 + '-' + Prenom1 + '-' + NumeroBon)
     
     # Génération du QR-Code
     QRimage = qrcode.make(signed_data)
@@ -228,9 +230,9 @@ def genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
         # Remplissage des valeurs sur la première ligne libre
         if typebon == 'vd':
             classeur[case.Position()] = NumeroBon
-            classeur[case.IncrColonne()] = str.upper(Nom1) + ' ' + Prenom1
-            classeur[case.IncrColonne()] = str.upper(Nom2) + ' ' + Prenom2
-            classeur[case.IncrColonne()] = str.upper(Nom3) + ' ' + Prenom3
+            classeur[case.IncrColonne()] = Nom1 + ' ' + Prenom1
+            classeur[case.IncrColonne()] = Nom2 + ' ' + Prenom2
+            classeur[case.IncrColonne()] = Nom3 + ' ' + Prenom3
             classeur[case.IncrColonne()] = Paiement
             classeur[case.IncrColonne()] = Payeur
             classeur[case.IncrColonne()] = DateBon
@@ -242,7 +244,7 @@ def genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
             classeur[case.IncrColonne()] = AutoParent
         else:
             classeur[case.Position()] = NumeroBon
-            classeur[case.IncrColonne()] = str.upper(Nom1) + ' ' + Prenom1
+            classeur[case.IncrColonne()] = Nom1 + ' ' + Prenom1
             if cours == '1' or cours == '1+1':
                 classeur[case.IncrColonne()] = 1
             else:
@@ -274,9 +276,9 @@ def genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
     if typebon == 'vd':
         BonVol.merge(
             NuméroBon = NumeroBon,
-            Pax1 = str.upper(Nom1) + ' ' + Prenom1,
-            Pax2 = str.upper(Nom2) + ' ' + Prenom2,
-            Pax3 = str.upper(Nom3) + ' ' + Prenom3,
+            Pax1 = Nom1 + ' ' + Prenom1,
+            Pax2 = Nom2 + ' ' + Prenom2,
+            Pax3 = Nom3 + ' ' + Prenom3,
             DateRèglement = DateBon,
             NomPayeur = Payeur,
             NuméroChèque = NumCheque,
@@ -290,7 +292,7 @@ def genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
     else:
         BonVol.merge(
             NuméroBon = NumeroBon,
-            NomPrénom = str.upper(Nom1) + ' ' + Prenom1,
+            NomPrénom = Nom1 + ' ' + Prenom1,
             Instr1 = PiloteVol1,
             Avion1 = AvionVol1,
             Date1 = DateVol1,
