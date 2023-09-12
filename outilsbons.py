@@ -10,6 +10,10 @@ import random
 import re
 import os
 import wx
+import tempfile
+import platform
+import time
+import signal
 
 from openpyxl import load_workbook
 from mailmerge import MailMerge
@@ -17,6 +21,13 @@ from docx import Document
 from docx.shared import Cm
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from FloatImageWord import add_float_picture
+from docx2pdf import convert
+from pathlib import Path
+
+if platform.system() == "Linux":
+    from unoserver.server import UnoServer
+    from unoserver.converter import UnoConverter
 
 # Case à cocher dans Word
 def checkedElement():
@@ -78,17 +89,15 @@ class CaseExcel:
         """Position actuelle de la case."""
         return self.colonne + str(self.ligne)
 
-def genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
-            autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
-            date1, heure1, temps1, pilote1, avion1, cours,
-            date2, heure2, temps2, pilote2, avion2, tarif,
-            cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-            cheminGPG, clef):
+def genereBon(
+        bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
+        autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
+        date1, heure1, temps1, pilote1, avion1, cours,
+        date2, heure2, temps2, pilote2, avion2, tarif,
+        cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
+        cheminGPG, clef, debug):
 
     """Génération des fichiers de bons de vol."""
-
-    from FloatImageWord import add_float_picture
-    from docx2pdf import convert
 
     gpg = gnupg.GPG(gpgbinary=cheminGPG)
     gpg.encoding = 'utf-8'
@@ -209,17 +218,28 @@ def genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
         'Avion : ' + AvionVol2 + '\n' + \
         'Pilote : ' + PiloteVol2 + '\n'
 
-    # Signature authentique du texte avec une clef
-    signed_data = gpg.sign(TexteBonVol, keyid=clef)
-    
     # Nom des fichiers
     NomFichier = os.path.join(cheminVol, DateFichier + '-' + Nom1 + '-' + Prenom1 + '-' + NumeroBon)
+
+    # Signature authentique du texte avec une clef
+    signature_filename = NomFichier + '.asc'
+    gpg.sign(TexteBonVol, keyid=clef, output=signature_filename)
+
+    # Erreur si la phrase secrète de la clef est erronée ou manquante
+    gpg.encoding = 'latin-1'
+    with open(signature_filename, 'rb') as signature_file:
+        verified = gpg.verify_file(signature_file)
+    if not verified:
+        if not debug:
+            os.remove(signature_filename)
+        raise ValueError('Phrase secrète erronée ou manquante !')
     
     # Génération du QR-Code
-    QRimage = qrcode.make(signed_data)
-    QRimage.save(NomFichier + '.png')
+    with open(signature_filename, 'rb') as signature_file:
+        QRimage = qrcode.make(signature_file.read())
+        QRimage.save(NomFichier + '.png')
     
-    # Remplissage du fichier Excel des bons VD
+    # Remplissage du fichier Excel des bons de vol
     # La première case à remplir est en A7
     case = CaseExcel('A',7)
     
@@ -342,5 +362,27 @@ def genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
         if cours == '2':
             checkboxes[6].append(checkedElement())
     BonVol.save(NomFichier + '.docx')
-    # Création du PDF
-    convert(NomFichier + '.docx')    
+
+    # Création du PDF sous Windows
+    if platform.system() == "Windows":
+        convert(NomFichier + '.docx')
+    # Création du PDF sous Linux
+    elif platform.system() == "Linux":
+        with tempfile.TemporaryDirectory() as tmpuserdir:
+            tmp_dir = Path(tmpuserdir).as_uri()
+        # Lancement du serveur pour LibreOffice
+        serveur = UnoServer(user_installation=tmp_dir)
+        process = serveur.start()
+        pid = process.pid
+        time.sleep(0.2)
+        # Serveur prêt, lancement de la conversion
+        convertisseur = UnoConverter()
+        convertisseur.convert(inpath=NomFichier + '.docx', outpath=NomFichier + '.pdf')
+        # On stoppe le serveur
+        os.kill(pid, signal.SIGTERM)
+
+    # Nettoyage éventuel des fichiers intermédiaires
+    if not debug:
+        os.remove(NomFichier + '.asc')
+        os.remove(NomFichier + '.png')
+        os.remove(NomFichier + '.docx')

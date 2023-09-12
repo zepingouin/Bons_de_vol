@@ -636,18 +636,21 @@ class TabVol(wx.Panel):
                 temps2 = ''
             cheminGPG = config['Crypto']['logiciel']
             clef = config['Crypto']['clefid']
+            debug = config['Crypto'].getboolean('debug')
             cheminVD = config['Fichiers']['dossiervd']
             classeurVD = config['Fichiers']['classeurvd']
             modeleVD = config['Fichiers']['modelevd']
             cheminVI = config['Fichiers']['dossiervi']
             classeurVI = config['Fichiers']['classeurvi']
             modeleVI = config['Fichiers']['modelevi']
-            genereBon(bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
+            genereBon(
+                bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
                 autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
                 date1, heure1, temps1, pilote1, avion1, cours,
                 date2, heure2, temps2, pilote2, avion2, tarif,
                 cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-                cheminGPG, clef)
+                cheminGPG, clef, debug)
+            print('Bon de vol généré !')
 
     def OverBoutonValider(self, event):
         """Activation sur la présence de la souris."""
@@ -763,7 +766,7 @@ of this license document, but changing it is not allowed.
         logo = config['Images']['logo']
         info.SetIcon(wx.Icon(logo))
         info.SetName('Bons ACD')
-        info.SetVersion('1.2')
+        info.SetVersion('1.3')
         info.SetDescription(description)
         info.SetCopyright('(C) 2023 Gérard Parat')
         info.SetWebSite('http://www.aero-club-dreux.com')
