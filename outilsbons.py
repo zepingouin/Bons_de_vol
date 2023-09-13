@@ -12,7 +12,7 @@ import os
 import wx
 import tempfile
 import platform
-import time
+import socket
 import signal
 
 from openpyxl import load_workbook
@@ -374,7 +374,15 @@ def genereBon(
         serveur = UnoServer(user_installation=tmp_dir)
         process = serveur.start()
         pid = process.pid
-        time.sleep(0.2)
+        # Attente de la disponibilité du serveur
+        while True:
+            try:
+                with socket.socket() as sock:
+                    # Valeurs par défaut de UnoServer
+                    sock.connect(('localhost', 2002))
+                    break
+            except:
+                continue
         # Serveur prêt, lancement de la conversion
         convertisseur = UnoConverter()
         convertisseur.convert(inpath=NomFichier + '.docx', outpath=NomFichier + '.pdf')
