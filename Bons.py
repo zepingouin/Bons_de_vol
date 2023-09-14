@@ -9,7 +9,7 @@ import wx.adv
 import wx.html
 import configparser
 
-from outilsbons import ID_Generator, genereBon
+from OutilsBons import ID_Generator, genereBon
 
 class FrameHelp(wx.Frame):
     """Création de la fenêtre d'aide."""
