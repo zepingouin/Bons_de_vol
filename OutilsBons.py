@@ -370,24 +370,24 @@ def genereBon(
     elif platform.system() == "Linux":
         with tempfile.TemporaryDirectory() as tmpuserdir:
             tmp_dir = Path(tmpuserdir).as_uri()
-        # Lancement du serveur pour LibreOffice
-        serveur = UnoServer(user_installation=tmp_dir)
-        process = serveur.start()
-        pid = process.pid
-        # Attente de la disponibilité du serveur
-        while True:
-            try:
-                with socket.socket() as sock:
-                    # Valeurs par défaut de UnoServer
-                    sock.connect(('localhost', 2002))
-                    break
-            except:
-                continue
-        # Serveur prêt, lancement de la conversion
-        convertisseur = UnoConverter()
-        convertisseur.convert(inpath=NomFichier + '.docx', outpath=NomFichier + '.pdf')
-        # On stoppe le serveur
-        os.kill(pid, signal.SIGTERM)
+            # Lancement du serveur pour LibreOffice
+            serveur = UnoServer(user_installation=tmp_dir)
+            process = serveur.start()
+            pid = process.pid
+            # Attente de la disponibilité du serveur
+            while True:
+                try:
+                    with socket.socket() as sock:
+                        # Valeurs par défaut de UnoServer
+                        sock.connect(('localhost', 2002))
+                        break
+                except:
+                    continue
+            # Serveur prêt, lancement de la conversion
+            convertisseur = UnoConverter()
+            convertisseur.convert(inpath=NomFichier + '.docx', outpath=NomFichier + '.pdf')
+            # On stoppe le serveur
+            os.kill(pid, signal.SIGTERM)
 
     # Nettoyage éventuel des fichiers intermédiaires
     if not debug:
