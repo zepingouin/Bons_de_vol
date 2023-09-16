@@ -634,6 +634,7 @@ class TabVol(wx.Panel):
                 date2 = ''
                 heure2 = ''
                 temps2 = ''
+            suiteOffice = config['Suite Office']['logiciel']
             cheminGPG = config['Crypto']['logiciel']
             clef = config['Crypto']['clefid']
             debug = config['Crypto'].getboolean('debug')
@@ -649,7 +650,7 @@ class TabVol(wx.Panel):
                 date1, heure1, temps1, pilote1, avion1, cours,
                 date2, heure2, temps2, pilote2, avion2, tarif,
                 cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-                cheminGPG, clef, debug)
+                suiteOffice, cheminGPG, clef, debug)
             print('Bon de vol généré !')
 
     def OverBoutonValider(self, event):
@@ -766,7 +767,7 @@ of this license document, but changing it is not allowed.
         logo = config['Images']['logo']
         info.SetIcon(wx.Icon(logo))
         info.SetName('Bons ACD')
-        info.SetVersion('1.4')
+        info.SetVersion('2.0')
         info.SetDescription(description)
         info.SetCopyright('(C) 2023 Gérard Parat')
         info.SetWebSite('http://www.aero-club-dreux.com')
