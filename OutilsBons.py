@@ -24,8 +24,6 @@ from docx.oxml.ns import qn
 from FloatImageWord import add_float_picture
 from docx2pdf import convert
 from pathlib import Path
-from unoserver.server import UnoServer
-from unoserver.converter import UnoConverter
 
 # Case à cocher dans Word
 def checkedElement():
@@ -96,6 +94,10 @@ def genereBon(
         suiteOffice, cheminGPG, clef, debug):
 
     """Génération des fichiers de bons de vol."""
+
+    if suiteOffice == 'LibreOffice':
+        from unoserver.server import UnoServer
+        from unoserver.converter import UnoConverter
 
     gpg = gnupg.GPG(gpgbinary=cheminGPG)
     gpg.encoding = 'utf-8'
