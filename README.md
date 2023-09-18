@@ -25,7 +25,6 @@ Les bons sont générés au format PDF avec un QR-Code contenant les information
     * Ajouter à PATH les chemins suivants :
       * `C:\Program Files\LibreOffice\program`
       * `C:\Program Files\LibreOffice\program\python-core-x.y.zz\Scripts` (`x.y.zz` est la version de Python livrée avec l'installation de LibreOffice)
-      * `%APPDATA%\Python\Pythonxy\Scripts` (`xy` est la version de Python livrée avec l'installation de LibreOffice)
     * Exécuter les commandes suivantes dans une fenêtre _Invite de commandes_ en tant qu'administrateur :
       * `cd "C:\Program Files\LibreOffice\program"`
       * `python get-pip.py`
