@@ -10,7 +10,7 @@ Les bons sont générés au format PDF avec un QR-Code contenant les information
 * Logiciels Windows :
   * Microsoft Office
   * [Gpg4win](https://www.gpg4win.org/)
-  * [Python](https://www.python.org/downloads/) (seulement pour Microsoft Office)
+  * [Python](https://www.python.org/downloads/)
   * [Git](https://git-scm.com/download/win)
 * Logiciels Linux :
   * LibreOffice
