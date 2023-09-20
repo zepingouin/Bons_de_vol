@@ -28,7 +28,6 @@ Les bons sont générés au format PDF avec un QR-Code contenant les information
     * Exécuter les commandes suivantes dans une fenêtre _Invite de commandes_ en tant qu'administrateur :
       * `cd "C:\Program Files\LibreOffice\program"`
       * `python get-pip.py`
-      * `move mailmerge.py mailmerge.py.back` (En conflit avec `docx-mailmerge`)
     * Modifier la ligne 43 du fichier `%APPDATA%\Python\Pythonxy\site-packages\unoserver\server.py` (`xy` est la version de Python livrée avec l'installation de LibreOffice)
       * `process = subprocess.Popen(cmd, shell=True)`
 * Pour Linux :

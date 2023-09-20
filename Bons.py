@@ -635,6 +635,7 @@ class TabVol(wx.Panel):
                 heure2 = ''
                 temps2 = ''
             suiteOffice = config['Suite Office']['logiciel']
+            cheminLibreOffice = config['Suite Office']['libreoffice']
             cheminGPG = config['Crypto']['logiciel']
             clef = config['Crypto']['clefid']
             debug = config['Crypto'].getboolean('debug')
@@ -650,7 +651,7 @@ class TabVol(wx.Panel):
                 date1, heure1, temps1, pilote1, avion1, cours,
                 date2, heure2, temps2, pilote2, avion2, tarif,
                 cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-                suiteOffice, cheminGPG, clef, debug)
+                suiteOffice, cheminLibreOffice, cheminGPG, clef, debug)
             print('Bon de vol généré !')
 
     def OverBoutonValider(self, event):

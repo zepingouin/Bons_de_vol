@@ -16,7 +16,6 @@ import socket
 import signal
 
 from openpyxl import load_workbook
-from mailmerge import MailMerge
 from docx import Document
 from docx.shared import Cm
 from docx.oxml import OxmlElement
@@ -91,13 +90,19 @@ def genereBon(
         date1, heure1, temps1, pilote1, avion1, cours,
         date2, heure2, temps2, pilote2, avion2, tarif,
         cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-        suiteOffice, cheminGPG, clef, debug):
+        suiteOffice, cheminLibreOffice, cheminGPG, clef, debug):
 
     """Génération des fichiers de bons de vol."""
 
     if suiteOffice == 'LibreOffice':
         from unoserver.server import UnoServer
         from unoserver.converter import UnoConverter
+        # Pour Windows, à faire après l'importation UnoServer pour
+        # éviter le conflit avec mailmerge.py de LibreOffice
+        if platform.system() == 'Windows':
+            import sys
+            sys.path.remove(cheminLibreOffice)
+        from mailmerge import MailMerge
 
     gpg = gnupg.GPG(gpgbinary=cheminGPG)
     gpg.encoding = 'utf-8'
