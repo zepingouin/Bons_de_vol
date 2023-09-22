@@ -8,8 +8,15 @@ import wx
 import wx.adv
 import wx.html
 import configparser
+import tempfile
+import platform
+
+import wx.lib.agw.pyprogress as PP
 
 from OutilsBons import ID_Generator, genereBon
+from threading import Thread
+from pathlib import Path
+from signal import SIGTERM
 
 class FrameHelp(wx.Frame):
     """Création de la fenêtre d'aide."""
@@ -227,9 +234,10 @@ class FrameConf(wx.Frame):
 class TabVol(wx.Panel):
     """Création de l'onglet."""
 
-    def __init__(self, parent, name):
+    def __init__(self, parent, name, suiteok):
         """Initialisation de l'onglet."""
         wx.Panel.__init__(self, parent)
+        self.suiteValide = suiteok
         self.name = name
         self.parent = parent
         self.InitTab()
@@ -553,106 +561,126 @@ class TabVol(wx.Panel):
 
     def OnBoutonValider(self, event):
         """Lancement de la création du bon de vol."""
-        if not self.timer.IsRunning():
-            self.timer.StartOnce(30000)
-            bon = self.NumeroBon
-            nom1 = self.champNom1.GetLineText(0)
-            prenom1 = self.champPrenom1.GetLineText(0)
-            typebon = self.name
-            if typebon == 'vd':
-                nom2 = self.champNom2.GetLineText(0)
-                prenom2 = self.champPrenom2.GetLineText(0)
-                nom3 = self.champNom3.GetLineText(0)
-                prenom3 = self.champPrenom3.GetLineText(0)
-            else:
-                nom2 = ''
-                prenom2 = ''
-                nom3 = ''
-                prenom3 = ''
-            autoparent = self.champParent.GetValue()
-            payeur = self.champPayeur.GetLineText(0)
-            datePaiement = self.choixDatePaiement.GetValue()
-            choixPaiement = self.comboPaiement.GetStringSelection()
-            if choixPaiement == 'Chèque':
-                numcheque = self.champCheque.GetLineText(0)
-                banque = self.champBanque.GetLineText(0)
-            else:
-                numcheque = ''
-                banque = ''
-            pilote1 = self.comboPilote1.GetStringSelection()
-            avion1 = self.comboAvion1.GetStringSelection()
-            date1 = self.choixDateVol1.GetValue()
-            heure1 = self.choixHeureVol1.GetValue()
-            temps1 = self.choixTempsVol1.GetValue()
-            aujourdhui = wx.DateTime.Now().GetDateOnly()
-            if typebon == 'vi':
-                pilote2 = self.comboPilote2.GetStringSelection()
-                avion2 = self.comboAvion2.GetStringSelection()
-                date2 = self.choixDateVol2.GetValue()
-                heure2 = self.choixHeureVol2.GetValue()
-                temps2 = self.choixTempsVol2.GetValue()
-                cours = self.rboxCours.GetStringSelection()
-                if cours == '1':
-                    tarif = config.getint('Tarifs', 'vol1')
-                elif cours == '1+1':
-                    tarif = config.getint('Tarifs', 'vol2')
+        # Génération du bon de vol uniquement avec une suite bureautique valide 
+        if self.suiteValide:
+            # Barre de progression
+            progressBar = PP.PyProgress(None, wx.ID_ANY, 'Bon de vol',
+                                'Génération en cours',
+                                agwStyle=wx.PD_APP_MODAL)
+            progressBar.SetGaugeProportion(0.2)
+            progressBar.SetGaugeSteps(50)
+            progressBar.SetGaugeBackground(wx.WHITE)
+            progressBar.SetFirstGradientColour(wx.WHITE)
+            progressBar.SetSecondGradientColour(wx.BLUE)
+            # Préparation du bon de vol
+            if not self.timer.IsRunning():
+                self.timer.StartOnce(30000)
+                bon = self.NumeroBon
+                nom1 = self.champNom1.GetLineText(0)
+                prenom1 = self.champPrenom1.GetLineText(0)
+                typebon = self.name
+                if typebon == 'vd':
+                    nom2 = self.champNom2.GetLineText(0)
+                    prenom2 = self.champPrenom2.GetLineText(0)
+                    nom3 = self.champNom3.GetLineText(0)
+                    prenom3 = self.champPrenom3.GetLineText(0)
                 else:
-                    tarif = config.getint('Tarifs', 'vol1') + config.getint('Tarifs', 'vol2')
-                if cours == '1' or cours == '1+1':
-                    # Mise à zéro si on a une date de vol le même jour...
-                    if date1.GetDateOnly() == aujourdhui:
-                        pilote1 = ''
-                        avion1 = ''
-                        date1 = ''
-                        heure1 = ''
-                        temps1 = ''
-                    pilote2 = ''
-                    avion2 = ''
-                    date2 = ''
-                    heure2 = ''
-                    temps2 = ''
+                    nom2 = ''
+                    prenom2 = ''
+                    nom3 = ''
+                    prenom3 = ''
+                autoparent = self.champParent.GetValue()
+                payeur = self.champPayeur.GetLineText(0)
+                datePaiement = self.choixDatePaiement.GetValue()
+                choixPaiement = self.comboPaiement.GetStringSelection()
+                if choixPaiement == 'Chèque':
+                    numcheque = self.champCheque.GetLineText(0)
+                    banque = self.champBanque.GetLineText(0)
                 else:
-                    # Mise à zéro si on a une date de vol le même jour...
-                    if date1.GetDateOnly() == aujourdhui:
-                        pilote1 = ''
-                        avion1 = ''
-                        date1 = ''
-                        heure1 = ''
-                        temps1 = ''
-                    # Mise à zéro si on a une date de vol le même jour...
-                    if date2.GetDateOnly() == aujourdhui:
+                    numcheque = ''
+                    banque = ''
+                pilote1 = self.comboPilote1.GetStringSelection()
+                avion1 = self.comboAvion1.GetStringSelection()
+                date1 = self.choixDateVol1.GetValue()
+                heure1 = self.choixHeureVol1.GetValue()
+                temps1 = self.choixTempsVol1.GetValue()
+                aujourdhui = wx.DateTime.Now().GetDateOnly()
+                if typebon == 'vi':
+                    pilote2 = self.comboPilote2.GetStringSelection()
+                    avion2 = self.comboAvion2.GetStringSelection()
+                    date2 = self.choixDateVol2.GetValue()
+                    heure2 = self.choixHeureVol2.GetValue()
+                    temps2 = self.choixTempsVol2.GetValue()
+                    cours = self.rboxCours.GetStringSelection()
+                    if cours == '1':
+                        tarif = config.getint('Tarifs', 'vol1')
+                    elif cours == '1+1':
+                        tarif = config.getint('Tarifs', 'vol2')
+                    else:
+                        tarif = config.getint('Tarifs', 'vol1') + config.getint('Tarifs', 'vol2')
+                    if cours == '1' or cours == '1+1':
+                        # Mise à zéro si on a une date de vol le même jour...
+                        if date1.GetDateOnly() == aujourdhui:
+                            pilote1 = ''
+                            avion1 = ''
+                            date1 = ''
+                            heure1 = ''
+                            temps1 = ''
                         pilote2 = ''
                         avion2 = ''
                         date2 = ''
                         heure2 = ''
                         temps2 = ''
-            else:
-                tarif = None
-                cours = ''
-                pilote2 = ''
-                avion2 = ''
-                date2 = ''
-                heure2 = ''
-                temps2 = ''
-            suiteOffice = config['Suite Office']['logiciel']
-            cheminLibreOffice = config['Suite Office']['libreoffice']
-            cheminGPG = config['Crypto']['logiciel']
-            clef = config['Crypto']['clefid']
-            debug = config['Crypto'].getboolean('debug')
-            cheminVD = config['Fichiers']['dossiervd']
-            classeurVD = config['Fichiers']['classeurvd']
-            modeleVD = config['Fichiers']['modelevd']
-            cheminVI = config['Fichiers']['dossiervi']
-            classeurVI = config['Fichiers']['classeurvi']
-            modeleVI = config['Fichiers']['modelevi']
-            genereBon(
-                bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
-                autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
-                date1, heure1, temps1, pilote1, avion1, cours,
-                date2, heure2, temps2, pilote2, avion2, tarif,
-                cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-                suiteOffice, cheminLibreOffice, cheminGPG, clef, debug)
-            print('Bon de vol généré !')
+                    else:
+                        # Mise à zéro si on a une date de vol le même jour...
+                        if date1.GetDateOnly() == aujourdhui:
+                            pilote1 = ''
+                            avion1 = ''
+                            date1 = ''
+                            heure1 = ''
+                            temps1 = ''
+                        # Mise à zéro si on a une date de vol le même jour...
+                        if date2.GetDateOnly() == aujourdhui:
+                            pilote2 = ''
+                            avion2 = ''
+                            date2 = ''
+                            heure2 = ''
+                            temps2 = ''
+                else:
+                    tarif = None
+                    cours = ''
+                    pilote2 = ''
+                    avion2 = ''
+                    date2 = ''
+                    heure2 = ''
+                    temps2 = ''
+                suiteOffice = config['Suite Office']['logiciel']
+                cheminLibreOffice = config['Suite Office']['libreoffice']
+                cheminGPG = config['Crypto']['logiciel']
+                clef = config['Crypto']['clefid']
+                debug = config['Crypto'].getboolean('debug')
+                cheminVD = config['Fichiers']['dossiervd']
+                classeurVD = config['Fichiers']['classeurvd']
+                modeleVD = config['Fichiers']['modelevd']
+                cheminVI = config['Fichiers']['dossiervi']
+                classeurVI = config['Fichiers']['classeurvi']
+                modeleVI = config['Fichiers']['modelevi']
+                # Exécution de la génération du bon de vol dans un fil
+                finTravail = [False]
+                travail = Thread(target=genereBon, args=(
+                    bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
+                    autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
+                    date1, heure1, temps1, pilote1, avion1, cours,
+                    date2, heure2, temps2, pilote2, avion2, tarif,
+                    cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
+                    suiteOffice, cheminLibreOffice, cheminGPG, clef, debug, finTravail)
+                    )
+                travail.start()
+                # Attente de la fin d'exécution
+                while not finTravail[0]:
+                    wx.MilliSleep(30)
+                    progressBar.UpdatePulse()
+                progressBar.Destroy()
 
     def OverBoutonValider(self, event):
         """Activation sur la présence de la souris."""
@@ -673,7 +701,7 @@ class TabVol(wx.Panel):
             index = 1
             label = 'Vols d\'initiation'
         self.parent.DeletePage(index)
-        self.__init__(self.parent, self.name)
+        self.__init__(self.parent, self.name, self.suiteValide)
         self.parent.InsertPage(index, self, label, True)
 
     def OverBoutonEffacer(self, event):
@@ -696,6 +724,7 @@ class MainFrame(wx.Frame):
         
         wx.Frame.__init__(self, None, title=self.titre)
 
+        self.serveurUno()
         self.InitUI()
         self.Centre()
         self.Show()
@@ -719,14 +748,15 @@ class MainFrame(wx.Frame):
 
         self.SetMenuBar(menubar)
 
+        self.Bind(wx.EVT_CLOSE, self.onClose)
         self.Bind(wx.EVT_MENU, self.OnQuit, quitItem)
         self.Bind(wx.EVT_MENU, self.OnSettings, confItem)
         self.Bind(wx.EVT_MENU, self.OnHelp, helpItem)
         self.Bind(wx.EVT_MENU, self.OnAboutBox, aboutItem)
 
         # Création des onglets.
-        tabvd = TabVol(notebook, name='vd')
-        tabvi = TabVol(notebook, name='vi')
+        tabvd = TabVol(notebook, name='vd', suiteok=self.suiteValide)
+        tabvi = TabVol(notebook, name='vi', suiteok=self.suiteValide)
 
         # Ajout des onglets à la fenêtre avec leur nom.
         notebook.AddPage(tabvd, self.titreVD)
@@ -737,9 +767,19 @@ class MainFrame(wx.Frame):
         panel.SetSizer(sizer)
         sizer.Fit(self)
 
+    def onClose(self, event):
+        """Fermeture de la fenêtre principale."""
+        # On stoppe le serveur Uno
+        if self.pid:
+            os.kill(self.pid, SIGTERM)
+        event.Skip()
+
     def OnQuit(self, event):
-        """Fermeture de la fenêtre principale """
-        self.Close()
+        """Fermeture de la fenêtre principale."""
+        # On stoppe le serveur Uno
+        if self.pid:
+            os.kill(self.pid, SIGTERM)
+        self.Destroy()
 
     def OnSettings(self, event):
         """Initialisation de la fenêtre de configuration."""
@@ -752,7 +792,7 @@ class MainFrame(wx.Frame):
     def OnAboutBox(self, event):
 
         description = """Ce logiciel permet la création de bons authentiques
-pour les vols de découverte ou d'initiation"""
+pour les vols de découverte ou d'initiation."""
 
         licence = """\
 GNU AFFERO GENERAL PUBLIC LICENSE
@@ -768,7 +808,7 @@ of this license document, but changing it is not allowed.
         logo = config['Images']['logo']
         info.SetIcon(wx.Icon(logo))
         info.SetName('Bons ACD')
-        info.SetVersion('2.0')
+        info.SetVersion('2.1')
         info.SetDescription(description)
         info.SetCopyright('(C) 2023 Gérard Parat')
         info.SetWebSite('http://www.aero-club-dreux.com')
@@ -788,12 +828,48 @@ of this license document, but changing it is not allowed.
         self.trameAide = config['Titres']['trameaide']
         self.trameConf = config['Titres']['trameconf']
 
+    def serveurUno(self):
+        """Lancement du serveur Uno pour LibreOffice"""
+        suiteOffice = config['Suite Office']['logiciel']
+        self.suiteValide = False
+        self.pid = None
+        # Importation des modules pour LibreOffice
+        if suiteOffice == 'LibreOffice':
+            from unoserver.server import UnoServer
+            # Lancement du serveur sous Windows
+            if platform.system() == 'Windows':
+                with tempfile.TemporaryDirectory() as tmpuserdir:
+                    tmp_dir = Path(tmpuserdir).as_uri()
+                # On lance en dehors du Context Manager
+                serveur = UnoServer(user_installation=tmp_dir)
+                process = serveur.start(executable='soffice.exe')
+                self.pid = process.pid
+                self.suiteValide = True
+            # Lancement du serveur sous Linux
+            elif platform.system() == 'Linux':
+                with tempfile.TemporaryDirectory() as tmpuserdir:
+                    tmp_dir = Path(tmpuserdir).as_uri()
+                    # On lance dans le Context Manager
+                    serveur = UnoServer(user_installation=tmp_dir)
+                    process = serveur.start()
+                    self.pid = process.pid
+                    self.suiteValide = True
+        # Rien à faire pour Microsoft Office
+        elif suiteOffice == 'Microsoft Office':
+            if platform.system() == 'Windows':
+                self.suiteValide = True
+            elif platform.system() == 'Linux':
+                # Pas de Microsoft Office sous Linux
+                print('La suite bureautique %s n\'est pas supportée !' % suiteOffice)
+        # Erreur de suite bureautique...
+        else:
+            print('La suite bureautique %s n\'est pas supportée !' % suiteOffice)
+
 def main():
 
     app = wx.App()
     MainFrame()
     app.MainLoop()
-
 
 if __name__ == '__main__':
     main()

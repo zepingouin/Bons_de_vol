@@ -10,10 +10,7 @@ import random
 import re
 import os
 import wx
-import tempfile
 import platform
-import socket
-import signal
 
 from openpyxl import load_workbook
 from docx import Document
@@ -22,7 +19,6 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from FloatImageWord import add_float_picture
 from docx2pdf import convert
-from pathlib import Path
 
 # Case à cocher dans Word
 def checkedElement():
@@ -90,19 +86,18 @@ def genereBon(
         date1, heure1, temps1, pilote1, avion1, cours,
         date2, heure2, temps2, pilote2, avion2, tarif,
         cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-        suiteOffice, cheminLibreOffice, cheminGPG, clef, debug):
+        suiteOffice, cheminLibreOffice, cheminGPG, clef, debug, finTravail):
 
     """Génération des fichiers de bons de vol."""
 
     if suiteOffice == 'LibreOffice':
-        from unoserver.server import UnoServer
         from unoserver.converter import UnoConverter
-        # Pour Windows, à faire après l'importation UnoServer pour
-        # éviter le conflit avec mailmerge.py de LibreOffice
-        if platform.system() == 'Windows':
-            import sys
-            sys.path.remove(cheminLibreOffice)
-        from mailmerge import MailMerge
+    # Spécifique Windows,  pour éviter le conflit
+    # avec mailmerge.py de LibreOffice
+    if platform.system() == 'Windows' and cheminLibreOffice != '':
+        import sys
+        sys.path.remove(cheminLibreOffice)
+    from mailmerge import MailMerge
 
     gpg = gnupg.GPG(gpgbinary=cheminGPG)
     gpg.encoding = 'utf-8'
@@ -368,58 +363,19 @@ def genereBon(
             checkboxes[6].append(checkedElement())
     BonVol.save(NomFichier + '.docx')
 
-    # Création du PDF sous Windows avec Microsoft Office
+    # Création du PDF avec Microsoft Office (Windows)
     if platform.system() == 'Windows' and suiteOffice == 'Microsoft Office':
         convert(NomFichier + '.docx')
-    # Création du PDF sous Windows avec LibreOffice
-    elif platform.system() == 'Windows' and suiteOffice == 'LibreOffice':
-        with tempfile.TemporaryDirectory() as tmpuserdir:
-            tmp_dir = Path(tmpuserdir).as_uri()
-        # Lancement du serveur pour LibreOffice
-        serveur = UnoServer(user_installation=tmp_dir)
-        process = serveur.start(executable='soffice.exe')
-        pid = process.pid
-        # Attente de la disponibilité du serveur
-        while True:
-            try:
-                with socket.socket() as sock:
-                    # Valeurs par défaut de UnoServer
-                    sock.connect(('localhost', 2002))
-                    break
-            except:
-                continue
-        # Serveur prêt, lancement de la conversion
+    # Création du PDF avec LibreOffice (Windows ou Linux)
+    elif suiteOffice == 'LibreOffice':
         convertisseur = UnoConverter()
         convertisseur.convert(inpath=NomFichier + '.docx', outpath=NomFichier + '.pdf')
-        # On stoppe le serveur
-        os.kill(pid, signal.SIGTERM)
-    # Création du PDF sous Linux avec LibreOffice
-    elif platform.system() == 'Linux' and suiteOffice == 'LibreOffice':
-        with tempfile.TemporaryDirectory() as tmpuserdir:
-            tmp_dir = Path(tmpuserdir).as_uri()
-            # Lancement du serveur pour LibreOffice
-            serveur = UnoServer(user_installation=tmp_dir)
-            process = serveur.start()
-            pid = process.pid
-            # Attente de la disponibilité du serveur
-            while True:
-                try:
-                    with socket.socket() as sock:
-                        # Valeurs par défaut de UnoServer
-                        sock.connect(('localhost', 2002))
-                        break
-                except:
-                    continue
-            # Serveur prêt, lancement de la conversion
-            convertisseur = UnoConverter()
-            convertisseur.convert(inpath=NomFichier + '.docx', outpath=NomFichier + '.pdf')
-            # On stoppe le serveur
-            os.kill(pid, signal.SIGTERM)
-    else:
-        print('La suite bureautique %s n\'est pas supportée !' % suiteOffice)
 
     # Nettoyage éventuel des fichiers intermédiaires
     if not debug:
         os.remove(NomFichier + '.asc')
         os.remove(NomFichier + '.png')
         os.remove(NomFichier + '.docx')
+    
+    # Retour
+    finTravail[0] = True
