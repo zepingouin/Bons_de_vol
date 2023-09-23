@@ -8,8 +8,15 @@ import wx
 import wx.adv
 import wx.html
 import configparser
+import tempfile
+import platform
+
+import wx.lib.agw.pyprogress as PP
 
 from OutilsBons import ID_Generator, genereBon
+from threading import Thread
+from pathlib import Path
+from signal import SIGTERM
 
 class FrameHelp(wx.Frame):
     """Création de la fenêtre d'aide."""
@@ -553,6 +560,16 @@ class TabVol(wx.Panel):
 
     def OnBoutonValider(self, event):
         """Lancement de la création du bon de vol."""
+        # Barre de progression
+        progressBar = PP.PyProgress(None, wx.ID_ANY, 'Bon de vol',
+                            'Génération en cours',
+                            agwStyle=wx.PD_APP_MODAL)
+        progressBar.SetGaugeProportion(0.2)
+        progressBar.SetGaugeSteps(50)
+        progressBar.SetGaugeBackground(wx.WHITE)
+        progressBar.SetFirstGradientColour(wx.WHITE)
+        progressBar.SetSecondGradientColour(wx.BLUE)
+        # Préparation du bon de vol
         if not self.timer.IsRunning():
             self.timer.StartOnce(30000)
             bon = self.NumeroBon
@@ -643,14 +660,22 @@ class TabVol(wx.Panel):
             cheminVI = config['Fichiers']['dossiervi']
             classeurVI = config['Fichiers']['classeurvi']
             modeleVI = config['Fichiers']['modelevi']
-            genereBon(
+            # Exécution de la génération du bon de vol dans un fil
+            finTravail = [False]
+            travail = Thread(target=genereBon, args=(
                 bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
                 autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
                 date1, heure1, temps1, pilote1, avion1, cours,
                 date2, heure2, temps2, pilote2, avion2, tarif,
                 cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-                cheminGPG, clef, debug)
-            print('Bon de vol généré !')
+                cheminGPG, clef, debug, finTravail)
+                )
+            travail.start()
+            # Attente de la fin d'exécution
+            while not finTravail[0]:
+                wx.MilliSleep(30)
+                progressBar.UpdatePulse()
+            progressBar.Destroy()
 
     def OverBoutonValider(self, event):
         """Activation sur la présence de la souris."""
@@ -694,6 +719,7 @@ class MainFrame(wx.Frame):
         
         wx.Frame.__init__(self, None, title=self.titre)
 
+        self.serveurUno()
         self.InitUI()
         self.Centre()
         self.Show()
@@ -717,6 +743,7 @@ class MainFrame(wx.Frame):
 
         self.SetMenuBar(menubar)
 
+        self.Bind(wx.EVT_CLOSE, self.onClose)
         self.Bind(wx.EVT_MENU, self.OnQuit, quitItem)
         self.Bind(wx.EVT_MENU, self.OnSettings, confItem)
         self.Bind(wx.EVT_MENU, self.OnHelp, helpItem)
@@ -735,9 +762,19 @@ class MainFrame(wx.Frame):
         panel.SetSizer(sizer)
         sizer.Fit(self)
 
+    def onClose(self, event):
+        """Fermeture de la fenêtre principale."""
+        # On stoppe le serveur Uno
+        if self.pid:
+            os.kill(self.pid, SIGTERM)
+        event.Skip()
+
     def OnQuit(self, event):
-        """Fermeture de la fenêtre principale """
-        self.Close()
+        """Fermeture de la fenêtre principale."""
+        # On stoppe le serveur Uno
+        if self.pid:
+            os.kill(self.pid, SIGTERM)
+        self.Destroy()
 
     def OnSettings(self, event):
         """Initialisation de la fenêtre de configuration."""
@@ -750,7 +787,7 @@ class MainFrame(wx.Frame):
     def OnAboutBox(self, event):
 
         description = """Ce logiciel permet la création de bons authentiques
-pour les vols de découverte ou d'initiation"""
+pour les vols de découverte ou d'initiation."""
 
         licence = """\
 GNU AFFERO GENERAL PUBLIC LICENSE
@@ -766,7 +803,7 @@ of this license document, but changing it is not allowed.
         logo = config['Images']['logo']
         info.SetIcon(wx.Icon(logo))
         info.SetName('Bons ACD')
-        info.SetVersion('1.4')
+        info.SetVersion('1.5')
         info.SetDescription(description)
         info.SetCopyright('(C) 2023 Gérard Parat')
         info.SetWebSite('http://www.aero-club-dreux.com')
@@ -786,12 +823,25 @@ of this license document, but changing it is not allowed.
         self.trameAide = config['Titres']['trameaide']
         self.trameConf = config['Titres']['trameconf']
 
+    def serveurUno(self):
+        """Lancement du serveur Uno pour LibreOffice (Linux)."""
+        self.pid = None
+        # Importation des modules pour LibreOffice
+        if platform.system() == 'Linux':
+            from unoserver.server import UnoServer
+            # Lancement du serveur
+            with tempfile.TemporaryDirectory() as tmpuserdir:
+                tmp_dir = Path(tmpuserdir).as_uri()
+                # On lance dans le Context Manager
+                serveur = UnoServer(user_installation=tmp_dir)
+                process = serveur.start()
+                self.pid = process.pid
+
 def main():
 
     app = wx.App()
     MainFrame()
     app.MainLoop()
-
 
 if __name__ == '__main__':
     main()

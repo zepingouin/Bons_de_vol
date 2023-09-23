@@ -10,10 +10,7 @@ import random
 import re
 import os
 import wx
-import tempfile
 import platform
-import socket
-import signal
 
 from openpyxl import load_workbook
 from mailmerge import MailMerge
@@ -23,10 +20,8 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from FloatImageWord import add_float_picture
 from docx2pdf import convert
-from pathlib import Path
 
-if platform.system() == "Linux":
-    from unoserver.server import UnoServer
+if platform.system() == 'Linux':
     from unoserver.converter import UnoConverter
 
 # Case à cocher dans Word
@@ -95,7 +90,7 @@ def genereBon(
         date1, heure1, temps1, pilote1, avion1, cours,
         date2, heure2, temps2, pilote2, avion2, tarif,
         cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-        cheminGPG, clef, debug):
+        cheminGPG, clef, debug, finTravail):
 
     """Génération des fichiers de bons de vol."""
 
@@ -292,44 +287,44 @@ def genereBon(
     
     # Création du bon
     DateValide = datePaiement.Add(wx.DateSpan(1))
-    BonVol = MailMerge(ModeleBon)
-    if typebon == 'vd':
-        BonVol.merge(
-            NuméroBon = NumeroBon,
-            Pax1 = Nom1 + ' ' + Prenom1,
-            Pax2 = Nom2 + ' ' + Prenom2,
-            Pax3 = Nom3 + ' ' + Prenom3,
-            DateRèglement = DateBon,
-            NomPayeur = Payeur,
-            NuméroChèque = NumCheque,
-            NomBanque = Banque,
-            DateValidité = DateValide.Format('%d/%m/%Y'),
-            Pilote = PiloteVol1,
-            Avion = AvionVol1,
-            DateVol = DateVol1,
-            HeureVol = HeureVol1,
-            DuréeVol = TempsVol1)
-    else:
-        BonVol.merge(
-            NuméroBon = NumeroBon,
-            NomPrénom = Nom1 + ' ' + Prenom1,
-            Instr1 = PiloteVol1,
-            Avion1 = AvionVol1,
-            Date1 = DateVol1,
-            Heure1 = HeureVol1,
-            Durée1 = TempsVol1,
-            Instr2 = PiloteVol2,
-            Avion2 = AvionVol2,
-            Date2 = DateVol2,
-            Heure2 = HeureVol2,
-            Durée2 = TempsVol2,
-            DateRèglement = DateBon,
-            NomPayeur = Payeur,
-            NuméroChèque = NumCheque,
-            NomBanque = Banque,
-            DateValidité = DateValide.Format('%d/%m/%Y'))
-    BonVol.write(NomFichier + '.docx')
-    BonVol.close()
+    with MailMerge(ModeleBon) as BonVol:
+        if typebon == 'vd':
+            BonVol.merge(
+                NuméroBon = NumeroBon,
+                Pax1 = Nom1 + ' ' + Prenom1,
+                Pax2 = Nom2 + ' ' + Prenom2,
+                Pax3 = Nom3 + ' ' + Prenom3,
+                DateRèglement = DateBon,
+                NomPayeur = Payeur,
+                NuméroChèque = NumCheque,
+                NomBanque = Banque,
+                DateValidité = DateValide.Format('%d/%m/%Y'),
+                Pilote = PiloteVol1,
+                Avion = AvionVol1,
+                DateVol = DateVol1,
+                HeureVol = HeureVol1,
+                DuréeVol = TempsVol1)
+        else:
+            BonVol.merge(
+                NuméroBon = NumeroBon,
+                NomPrénom = Nom1 + ' ' + Prenom1,
+                Instr1 = PiloteVol1,
+                Avion1 = AvionVol1,
+                Date1 = DateVol1,
+                Heure1 = HeureVol1,
+                Durée1 = TempsVol1,
+                Instr2 = PiloteVol2,
+                Avion2 = AvionVol2,
+                Date2 = DateVol2,
+                Heure2 = HeureVol2,
+                Durée2 = TempsVol2,
+                DateRèglement = DateBon,
+                NomPayeur = Payeur,
+                NuméroChèque = NumCheque,
+                NomBanque = Banque,
+                DateValidité = DateValide.Format('%d/%m/%Y'))
+        BonVol.write(NomFichier + '.docx')
+
     # Ajout du QR-Code
     BonVol = Document(NomFichier + '.docx')
     tables = BonVol.tables
@@ -363,34 +358,19 @@ def genereBon(
             checkboxes[6].append(checkedElement())
     BonVol.save(NomFichier + '.docx')
 
-    # Création du PDF sous Windows
-    if platform.system() == "Windows":
+    # Création du PDF avec Microsoft Office (Windows)
+    if platform.system() == 'Windows':
         convert(NomFichier + '.docx')
-    # Création du PDF sous Linux
-    elif platform.system() == "Linux":
-        with tempfile.TemporaryDirectory() as tmpuserdir:
-            tmp_dir = Path(tmpuserdir).as_uri()
-            # Lancement du serveur pour LibreOffice
-            serveur = UnoServer(user_installation=tmp_dir)
-            process = serveur.start()
-            pid = process.pid
-            # Attente de la disponibilité du serveur
-            while True:
-                try:
-                    with socket.socket() as sock:
-                        # Valeurs par défaut de UnoServer
-                        sock.connect(('localhost', 2002))
-                        break
-                except:
-                    continue
-            # Serveur prêt, lancement de la conversion
-            convertisseur = UnoConverter()
-            convertisseur.convert(inpath=NomFichier + '.docx', outpath=NomFichier + '.pdf')
-            # On stoppe le serveur
-            os.kill(pid, signal.SIGTERM)
+    # Création du PDF avec LibreOffice (Linux)
+    elif platform.system() == 'Linux':
+        convertisseur = UnoConverter()
+        convertisseur.convert(inpath=NomFichier + '.docx', outpath=NomFichier + '.pdf')
 
     # Nettoyage éventuel des fichiers intermédiaires
     if not debug:
         os.remove(NomFichier + '.asc')
         os.remove(NomFichier + '.png')
         os.remove(NomFichier + '.docx')
+    
+    # Retour
+    finTravail[0] = True
