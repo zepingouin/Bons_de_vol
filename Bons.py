@@ -563,18 +563,20 @@ class TabVol(wx.Panel):
         """Lancement de la création du bon de vol."""
         # Génération du bon de vol uniquement avec une suite bureautique valide 
         if self.suiteValide:
-            # Barre de progression
-            progressBar = PP.PyProgress(None, wx.ID_ANY, 'Bon de vol',
-                                'Génération en cours',
-                                agwStyle=wx.PD_APP_MODAL)
-            progressBar.SetGaugeProportion(0.2)
-            progressBar.SetGaugeSteps(50)
-            progressBar.SetGaugeBackground(wx.WHITE)
-            progressBar.SetFirstGradientColour(wx.WHITE)
-            progressBar.SetSecondGradientColour(wx.BLUE)
-            # Préparation du bon de vol
+            # Génération du bon de vol
             if not self.timer.IsRunning():
+                # Barre de progression
+                progressBar = PP.PyProgress(None, wx.ID_ANY, 'Bon de vol',
+                                    'Génération en cours',
+                                    agwStyle=wx.PD_APP_MODAL)
+                progressBar.SetGaugeProportion(0.2)
+                progressBar.SetGaugeSteps(50)
+                progressBar.SetGaugeBackground(wx.WHITE)
+                progressBar.SetFirstGradientColour(wx.WHITE)
+                progressBar.SetSecondGradientColour(wx.BLUE)
+                # Temporisation de 30 s en cas d'échec
                 self.timer.StartOnce(30000)
+                # Préparation du bon de vol
                 bon = self.NumeroBon
                 nom1 = self.champNom1.GetLineText(0)
                 prenom1 = self.champPrenom1.GetLineText(0)
@@ -808,7 +810,7 @@ of this license document, but changing it is not allowed.
         logo = config['Images']['logo']
         info.SetIcon(wx.Icon(logo))
         info.SetName('Bons ACD')
-        info.SetVersion('2.1')
+        info.SetVersion('2.2')
         info.SetDescription(description)
         info.SetCopyright('(C) 2023 Gérard Parat')
         info.SetWebSite('http://www.aero-club-dreux.com')

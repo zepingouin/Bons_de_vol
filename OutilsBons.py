@@ -11,6 +11,7 @@ import re
 import os
 import wx
 import platform
+import sys
 
 from openpyxl import load_workbook
 from docx import Document
@@ -94,10 +95,18 @@ def genereBon(
         from unoserver.converter import UnoConverter
     # Spécifique Windows,  pour éviter le conflit
     # avec mailmerge.py de LibreOffice
-    if platform.system() == 'Windows' and cheminLibreOffice != '':
-        import sys
-        sys.path.remove(cheminLibreOffice)
-    from mailmerge import MailMerge
+    if platform.system() == 'Windows':
+        if sys.path.count(cheminLibreOffice):
+            sys.path.remove(cheminLibreOffice)
+        try:
+            from mailmerge import MailMerge
+        except:
+            print('Chemin vers LibreOffice erroné !')
+            # Retour
+            finTravail[0] = True
+            return
+    elif platform.system() == 'Linux':
+        from mailmerge import MailMerge
 
     gpg = gnupg.GPG(gpgbinary=cheminGPG)
     gpg.encoding = 'utf-8'
@@ -227,12 +236,24 @@ def genereBon(
 
     # Erreur si la phrase secrète de la clef est erronée ou manquante
     gpg.encoding = 'latin-1'
-    with open(signature_filename, 'rb') as signature_file:
-        verified = gpg.verify_file(signature_file)
-    if not verified:
-        if not debug:
-            os.remove(signature_filename)
-        raise ValueError('Phrase secrète erronée ou manquante !')
+    try:
+        with open(signature_filename, 'rb') as signature_file:
+            verified = gpg.verify_file(signature_file)
+    except FileNotFoundError:
+        print('Le fichier %s n\'a pas été créé !' % signature_filename,
+              'Phrase secrète erronée ou manquante...',
+              '**TEMPORISATION** de 30 s', sep=os.linesep)
+        # Retour
+        finTravail[0] = True
+        return
+    else:
+        if not verified:
+            if not debug:
+                os.remove(signature_filename)
+            print('Problème de signature !')
+            # Retour
+            finTravail[0] = True
+            return
     
     # Génération du QR-Code
     with open(signature_filename, 'rb') as signature_file:
