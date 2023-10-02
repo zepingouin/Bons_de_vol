@@ -665,7 +665,7 @@ class TabVol(wx.Panel):
             # Exécution de la génération du bon de vol dans un fil
             finTravail = [False]
             travail = Thread(target=genereBon, args=(
-                bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
+                Version, bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
                 autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
                 date1, heure1, temps1, pilote1, avion1, cours,
                 date2, heure2, temps2, pilote2, avion2, tarif,
@@ -717,6 +717,8 @@ class MainFrame(wx.Frame):
     def __init__(self):
         """Initialisation de la fenêtre principale."""
 
+        global Version
+        Version = '1.7'
         self.ConfigUI()
         
         wx.Frame.__init__(self, None, title=self.titre)
@@ -805,7 +807,7 @@ of this license document, but changing it is not allowed.
         logo = config['Images']['logo']
         info.SetIcon(wx.Icon(logo))
         info.SetName('Bons ACD')
-        info.SetVersion('1.6')
+        info.SetVersion(Version)
         info.SetDescription(description)
         info.SetCopyright('(C) 2023 Gérard Parat')
         info.SetWebSite('http://www.aero-club-dreux.com')
