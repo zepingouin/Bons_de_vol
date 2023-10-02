@@ -82,7 +82,7 @@ class CaseExcel:
         return self.colonne + str(self.ligne)
 
 def genereBon(
-        bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
+        Version, bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
         autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
         date1, heure1, temps1, pilote1, avion1, cours,
         date2, heure2, temps2, pilote2, avion2, tarif,
@@ -329,7 +329,8 @@ def genereBon(
                 Avion = AvionVol1,
                 DateVol = DateVol1,
                 HeureVol = HeureVol1,
-                DuréeVol = TempsVol1)
+                DuréeVol = TempsVol1,
+                Version = Version)
         else:
             BonVol.merge(
                 NuméroBon = NumeroBon,
@@ -348,7 +349,8 @@ def genereBon(
                 NomPayeur = Payeur,
                 NuméroChèque = NumCheque,
                 NomBanque = Banque,
-                DateValidité = DateValide.Format('%d/%m/%Y'))
+                DateValidité = DateValide.Format('%d/%m/%Y'),
+                Version = Version)
         BonVol.write(NomFichier + '.docx')
 
     # Ajout du QR-Code
