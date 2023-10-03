@@ -683,6 +683,7 @@ class TabVol(wx.Panel):
                     wx.MilliSleep(30)
                     progressBar.UpdatePulse()
                 progressBar.Destroy()
+                print('Le bon de vol n° %s est prêt !' % bon)
 
     def OverBoutonValider(self, event):
         """Activation sur la présence de la souris."""
