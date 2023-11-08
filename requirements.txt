@@ -6,4 +6,4 @@ python-gnupg
 qrcode[pil]
 docx2pdf
 wxPython
-unoserver
+unoserver==2.0

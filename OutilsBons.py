@@ -402,3 +402,4 @@ def genereBon(
     
     # Retour
     finTravail[0] = True
+    finTravail[1] = True

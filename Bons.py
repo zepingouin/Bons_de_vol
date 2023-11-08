@@ -16,7 +16,6 @@ import wx.lib.agw.pyprogress as PP
 from OutilsBons import ID_Generator, genereBon
 from threading import Thread
 from pathlib import Path
-from signal import SIGTERM
 
 class FrameHelp(wx.Frame):
     """Création de la fenêtre d'aide."""
@@ -668,7 +667,7 @@ class TabVol(wx.Panel):
                 classeurVI = config['Fichiers']['classeurvi']
                 modeleVI = config['Fichiers']['modelevi']
                 # Exécution de la génération du bon de vol dans un fil
-                finTravail = [False]
+                finTravail = [False, False]
                 travail = Thread(target=genereBon, args=(
                     Version, bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
                     autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
@@ -683,7 +682,8 @@ class TabVol(wx.Panel):
                     wx.MilliSleep(30)
                     progressBar.UpdatePulse()
                 progressBar.Destroy()
-                print('Le bon de vol n° %s est prêt !' % bon)
+                if finTravail[1]:
+                    print('Le bon de vol n° %s est prêt !' % bon)
 
     def OverBoutonValider(self, event):
         """Activation sur la présence de la souris."""
@@ -724,7 +724,7 @@ class MainFrame(wx.Frame):
         """Initialisation de la fenêtre principale."""
 
         global Version
-        Version = '2.3'
+        Version = '2.4'
         self.ConfigUI()
         
         wx.Frame.__init__(self, None, title=self.titre)
@@ -775,15 +775,15 @@ class MainFrame(wx.Frame):
     def onClose(self, event):
         """Fermeture de la fenêtre principale."""
         # On stoppe le serveur Uno
-        if self.pid:
-            os.kill(self.pid, SIGTERM)
+        if self.libreoffice_process:
+            self.serveur.stop()
         event.Skip()
 
     def OnQuit(self, event):
         """Fermeture de la fenêtre principale."""
         # On stoppe le serveur Uno
-        if self.pid:
-            os.kill(self.pid, SIGTERM)
+        if self.libreoffice_process:
+            self.serveur.stop()
         self.Destroy()
 
     def OnSettings(self, event):
@@ -837,7 +837,7 @@ of this license document, but changing it is not allowed.
         """Lancement du serveur Uno pour LibreOffice"""
         suiteOffice = config['Suite Office']['logiciel']
         self.suiteValide = False
-        self.pid = None
+        self.libreoffice_process = None
         # Importation des modules pour LibreOffice
         if suiteOffice == 'LibreOffice':
             from unoserver.server import UnoServer
@@ -846,18 +846,16 @@ of this license document, but changing it is not allowed.
                 with tempfile.TemporaryDirectory() as tmpuserdir:
                     tmp_dir = Path(tmpuserdir).as_uri()
                 # On lance en dehors du Context Manager
-                serveur = UnoServer(user_installation=tmp_dir)
-                process = serveur.start(executable='soffice.exe')
-                self.pid = process.pid
+                self.serveur = UnoServer(user_installation=tmp_dir)
+                self.libreoffice_process = self.serveur.start(executable='soffice.exe')
                 self.suiteValide = True
             # Lancement du serveur sous Linux
             elif platform.system() == 'Linux':
                 with tempfile.TemporaryDirectory() as tmpuserdir:
                     tmp_dir = Path(tmpuserdir).as_uri()
                     # On lance dans le Context Manager
-                    serveur = UnoServer(user_installation=tmp_dir)
-                    process = serveur.start()
-                    self.pid = process.pid
+                    self.serveur = UnoServer(user_installation=tmp_dir)
+                    self.libreoffice_process = self.serveur.start()
                     self.suiteValide = True
         # Rien à faire pour Microsoft Office
         elif suiteOffice == 'Microsoft Office':
