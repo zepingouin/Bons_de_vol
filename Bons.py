@@ -719,7 +719,7 @@ class MainFrame(wx.Frame):
         """Initialisation de la fenêtre principale."""
 
         global Version
-        Version = '1.8'
+        Version = '1.9'
         self.ConfigUI()
         
         wx.Frame.__init__(self, None, title=self.titre)
