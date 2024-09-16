@@ -31,18 +31,18 @@ def checkedElement():
 # Génération du numéro de bon
 def ID_Generator(maxalpha, maxdigit, chars=string.ascii_uppercase + string.digits):
     """Génération aléatoire de 'maxalpha' lettres et 'maxdigit' chiffres,
-les lettres O, I et Q ne sont pas autorisées."""
+les lettres O, I, U et Q ne sont pas autorisées."""
     numeroBon = ''
     nombreTirage = 0
     nombreAlpha = 0
     nombreDigit = 0
     while nombreTirage < maxalpha + maxdigit:
-        Tirage = ''.join(random.choice(chars))
+        Tirage = random.choice(chars)
         if Tirage.isdigit() and nombreDigit < maxdigit:
             nombreTirage += 1
             nombreDigit += 1
             numeroBon += Tirage
-        elif Tirage.isalpha() and not re.match('(O|I|Q)', Tirage) and nombreAlpha < maxalpha:
+        elif Tirage.isalpha() and not re.match('(O|I|U|Q)', Tirage) and nombreAlpha < maxalpha:
             nombreTirage += 1
             nombreAlpha += 1
             numeroBon += Tirage
