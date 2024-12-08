@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2023-2024 Gérard Parat <bons.acd@le-cycliste.fr>
+#    Copyright (c) 2023 Gérard Parat <aero@lunique.fr>
 #
 """ Création de bons de vol de découverte ou d'initiation."""
 
@@ -98,12 +98,6 @@ class FrameConf(wx.Frame):
         self.champClef = wx.TextCtrl(self, value=self.clef)
         sizer.Add(self.champClef, pos=(7,1), span=(1, 30), flag=wx.LEFT|wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
 
-        labelClefsID = wx.StaticText(self, label='ID Clefs')
-        sizer.Add(labelClefsID, pos=(8, 0), flag=wx.LEFT|wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL, border=10)
-        self.clefs = config['Crypto']['clefsid']
-        self.champClefs = wx.TextCtrl(self, value=self.clefs)
-        sizer.Add(self.champClefs, pos=(8,1), span=(1, 30), flag=wx.LEFT|wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
-
         self.boutonModeleVD = wx.Button(self, label='Parcourir...')
         sizer.Add(self.boutonModeleVD, pos=(0, 31), span=(1, 1),
             flag=wx.TOP|wx.BOTTOM|wx.RIGHT|wx.ALIGN_LEFT, border=5)
@@ -148,7 +142,6 @@ class FrameConf(wx.Frame):
         self.boutonDossierVI.Bind(wx.EVT_BUTTON, self.OnBoutonDossierVI)
         self.boutonCrypto.Bind(wx.EVT_BUTTON, self.OnBoutonCrypto)
         self.champClef.Bind(wx.EVT_TEXT, self.OnClefID)
-        self.champClefs.Bind(wx.EVT_TEXT, self.OnClefsID)
 
         self.boutonAnnuler.Bind(wx.EVT_BUTTON, self.OnBoutonAnnuler)
         self.Bind(wx.EVT_CLOSE, self.OnBoutonAnnuler)
@@ -223,12 +216,8 @@ class FrameConf(wx.Frame):
             config['Crypto']['logiciel'] = fichier
 
     def OnClefID(self, event):
-        """Configuration de la clef de cryptographie du signataire."""
+        """Configuration de la clef de cryptographie."""
         config['Crypto']['clefid'] = self.champClef.GetLineText(0)
-
-    def OnClefsID(self, event):
-        """Configuration des clefs de cryptographie des destinataires."""
-        config['Crypto']['clefsid'] = self.champClefs.GetLineText(0)
 
     def OnBoutonAnnuler(self, event):
         """Annulation des éventuelles modifications de la configuration."""
@@ -665,7 +654,6 @@ class TabVol(wx.Panel):
                 temps2 = ''
             cheminGPG = config['Crypto']['logiciel']
             clef = config['Crypto']['clefid']
-            clefs = config['Crypto']['clefsid']
             debug = config['Crypto'].getboolean('debug')
             cheminVD = config['Fichiers']['dossiervd']
             classeurVD = config['Fichiers']['classeurvd']
@@ -681,7 +669,7 @@ class TabVol(wx.Panel):
                 date1, heure1, temps1, pilote1, avion1, cours,
                 date2, heure2, temps2, pilote2, avion2, tarif,
                 cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-                cheminGPG, clef, clefs, debug, finTravail)
+                cheminGPG, clef, debug, finTravail)
                 )
             travail.start()
             # Attente de la fin d'exécution
@@ -731,7 +719,7 @@ class MainFrame(wx.Frame):
         """Initialisation de la fenêtre principale."""
 
         global Version
-        Version = '1.10'
+        Version = '1.9'
         self.ConfigUI()
         
         wx.Frame.__init__(self, None, title=self.titre)
