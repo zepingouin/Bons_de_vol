@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2023 Gérard Parat <aero@lunique.fr>
+#    Copyright (c) 2023-2024 Gérard Parat <bons.acd@le-cycliste.fr
 #
 """Création de bons vol."""
 
@@ -90,7 +90,7 @@ def genereBon(
         date1, heure1, temps1, pilote1, avion1, cours,
         date2, heure2, temps2, pilote2, avion2, tarif,
         cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
-        cheminGPG, clef, debug, finTravail):
+        cheminGPG, clef, clefs, debug, finTravail):
 
     """Génération des fichiers de bons de vol."""
 
@@ -216,15 +216,15 @@ def genereBon(
     # Nom des fichiers
     NomFichier = os.path.join(cheminVol, DateFichier + '-' + Nom1 + '-' + Prenom1 + '-' + NumeroBon)
 
-    # Signature authentique du texte avec une clef
+    # Chiffrement pour les destinataires et signature du texte par l'éditeur
     signature_filename = NomFichier + '.asc'
-    gpg.sign(TexteBonVol, keyid=clef, output=signature_filename)
+    gpg.encrypt(TexteBonVol, recipients=clefs.split(), sign=clef, output=signature_filename)
 
     # Erreur si la phrase secrète de la clef est erronée ou manquante
     gpg.encoding = 'latin-1'
     try:
         with open(signature_filename, 'rb') as signature_file:
-            verified = gpg.verify_file(signature_file)
+            verified = gpg.decrypt_file(signature_file)
     except FileNotFoundError:
         print('Le fichier %s n\'a pas été créé !' % signature_filename,
               'Phrase secrète erronée ou manquante...',
@@ -236,7 +236,7 @@ def genereBon(
         if not verified:
             if not debug:
                 os.remove(signature_filename)
-            print('Problème de signature !')
+            print('Problème sur une clef !')
             # Retour
             finTravail[0] = True
             return
