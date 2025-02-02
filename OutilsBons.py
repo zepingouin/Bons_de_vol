@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2023 Gérard Parat <aero@lunique.fr>
+#    Copyright 2023-2025 Gérard Parat <bons.acd@le-cycliste.fr>
 #
 """Création de bons vol."""
 
