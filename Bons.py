@@ -1,5 +1,5 @@
 #
-#    Copyright 2023-2025 Gérard Parat <bons.acd@le-cycliste.fr>
+#    Copyright (C) 2023-2025 Gérard Parat <bons.acd@le-cycliste.fr>
 #
 """ Création de bons de vol de découverte ou d'initiation."""
 
