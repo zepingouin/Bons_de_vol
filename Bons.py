@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2023 Gérard Parat <aero@lunique.fr>
+#    Copyright (C) 2023-2025 Gérard Parat <bons.acd@le-cycliste.fr>
 #
 """ Création de bons de vol de découverte ou d'initiation."""
 
@@ -360,7 +360,7 @@ class TabVol(wx.Panel):
         if self.name == 'vd':
             liste = list(config.items('Pilotes')) + list(config.items('Instructeurs'))
             liste.remove(config.items('Instructeurs')[0])
-            defautPil = config['Pilotes']['pil01']
+            defautPil = config['Pilotes']['pil00']
         else:
             liste = list(config.items('Instructeurs'))
             defautPil = config['Instructeurs']['inst00']
@@ -374,12 +374,7 @@ class TabVol(wx.Panel):
         sizer.Add(labelAvion1, pos=(16, 3), flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL, border=5)
         listeAvions = []
         liste = list(config.items('Avions'))
-        if self.name == 'vd':
-            liste = list(config.items('Avions'))
-            liste.remove(config.items('Avions')[0])
-            defautAvion = config['Avions']['avion01']
-        else:
-            defautAvion = config['Avions']['avion00']
+        defautAvion = config['Avions']['avion00']
         for item in liste:
             listeAvions.append(item[1])
         self.comboAvion1 = wx.ComboBox(self, value=defautAvion,
@@ -648,6 +643,12 @@ class TabVol(wx.Panel):
                             heure2 = ''
                             temps2 = ''
                 else:
+                    if date1.GetDateOnly() == aujourdhui:
+                        pilote1 = ''
+                        avion1 = ''
+                        date1 = ''
+                        heure1 = ''
+                        temps1 = ''
                     tarif = None
                     cours = ''
                     pilote2 = ''
@@ -724,7 +725,7 @@ class MainFrame(wx.Frame):
         """Initialisation de la fenêtre principale."""
 
         global Version
-        Version = '2.5'
+        Version = '2.6'
         self.ConfigUI()
         
         wx.Frame.__init__(self, None, title=self.titre)
@@ -815,7 +816,7 @@ of this license document, but changing it is not allowed.
         info.SetName('Bons ACD')
         info.SetVersion(Version)
         info.SetDescription(description)
-        info.SetCopyright('(C) 2023 Gérard Parat')
+        info.SetCopyright('(C) 2023-2025 Gérard Parat')
         info.SetWebSite('http://www.aero-club-dreux.com')
         info.SetLicence(licence)
         info.AddDeveloper('Gérard Parat')
