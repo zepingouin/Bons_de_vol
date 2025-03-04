@@ -1,6 +1,7 @@
 docx-mailmerge
 openpyxl
 lxml
+oooenv
 python-docx
 python-gnupg
 qrcode[pil]
