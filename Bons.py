@@ -321,6 +321,10 @@ class TabVol(wx.Panel):
         sizer.Add(labelPayeur, pos=(9, 1), flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL, border=5)
         self.champPayeur = wx.TextCtrl(self)
         sizer.Add(self.champPayeur, pos=(9, 2), flag=wx.TOP|wx.EXPAND)
+        labelTel = wx.StaticText(self, label='Téléphone')
+        sizer.Add(labelTel, pos=(9, 3), flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL, border=5)
+        self.champTel = wx.TextCtrl(self)
+        sizer.Add(self.champTel, pos=(9, 4), flag=wx.TOP|wx.EXPAND)
         labelDatePaiement = wx.StaticText(self, label='Date')
         sizer.Add(labelDatePaiement, pos=(10, 1), flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL, border=5)
         self.choixDatePaiement = wx.adv.DatePickerCtrl(self)
@@ -584,6 +588,7 @@ class TabVol(wx.Panel):
                 prenom3 = ''
             autoparent = self.champParent.GetValue()
             payeur = self.champPayeur.GetLineText(0)
+            phone = self.champTel.GetLineText(0)
             datePaiement = self.choixDatePaiement.GetValue()
             choixPaiement = self.comboPaiement.GetStringSelection()
             if choixPaiement == 'Chèque':
@@ -666,7 +671,7 @@ class TabVol(wx.Panel):
             finTravail = [False, False]
             travail = Thread(target=genereBon, args=(
                 Version, bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
-                autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
+                autoparent, choixPaiement, payeur, phone, datePaiement, numcheque, banque,
                 date1, heure1, temps1, pilote1, avion1, cours,
                 date2, heure2, temps2, pilote2, avion2, tarif,
                 cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
@@ -720,7 +725,7 @@ class MainFrame(wx.Frame):
         """Initialisation de la fenêtre principale."""
 
         global Version
-        Version = '1.10'
+        Version = '1.11'
         self.ConfigUI()
         
         wx.Frame.__init__(self, None, title=self.titre)
