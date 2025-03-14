@@ -372,7 +372,9 @@ def genereBon(
             checkboxes[3].append(checkedElement())
         else:
             checkboxes[4].append(checkedElement())
-        if cours == '2':
+        if cours == '2' or cours == '1':
+            checkboxes[5].append(checkedElement())
+        if cours == '2' or cours == '1+1':
             checkboxes[6].append(checkedElement())
     BonVol.save(NomFichier + '.docx')
 
