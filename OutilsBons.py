@@ -83,7 +83,7 @@ class CaseExcel:
 
 def genereBon(
         Version, bon, nom1, prenom1, typebon, nom2, prenom2, nom3, prenom3,
-        autoparent, choixPaiement, payeur, datePaiement, numcheque, banque,
+        autoparent, choixPaiement, payeur, phone, datePaiement, numcheque, banque,
         date1, heure1, temps1, pilote1, avion1, cours,
         date2, heure2, temps2, pilote2, avion2, tarif,
         cheminVD, classeurVD, modeleVD, cheminVI, classeurVI, modeleVI,
@@ -143,6 +143,7 @@ def genereBon(
     NumCheque = numcheque
     Banque = banque
     Payeur = payeur
+    Phone = phone
     if date1 != '' and heure1 != '' and temps1 != '':
         DateVol1 = date1.Format('%d/%m/%Y')
         HeureVol1 = heure1.Format('%Hh%M')
@@ -193,7 +194,8 @@ def genereBon(
             'Tarif : ' + str(tarif) + ' EUR\n'
     TexteBonVol += \
     'Moyen de Paiement : ' + Paiement + '\n' + \
-    'Nom du payeur : ' + Payeur + '\n'
+    'Nom du payeur : ' + Payeur + '\n' + \
+    'Téléphone : ' + Phone + '\n'
     if Paiement == 'Chèque':
         TexteBonVol += \
         'N° de chèque : ' + NumCheque + '\n' + \
@@ -322,6 +324,7 @@ def genereBon(
                 Pax3 = Nom3 + ' ' + Prenom3,
                 DateRèglement = DateBon,
                 NomPayeur = Payeur,
+                NumPhone = Phone,
                 NuméroChèque = NumCheque,
                 NomBanque = Banque,
                 DateValidité = DateValide.Format('%d/%m/%Y'),
@@ -347,6 +350,7 @@ def genereBon(
                 Durée2 = TempsVol2,
                 DateRèglement = DateBon,
                 NomPayeur = Payeur,
+                NumPhone = Phone,
                 NuméroChèque = NumCheque,
                 NomBanque = Banque,
                 DateValidité = DateValide.Format('%d/%m/%Y'),
