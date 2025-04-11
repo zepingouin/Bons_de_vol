@@ -5,8 +5,8 @@ Les bons sont générés au format PDF avec un QR-Code contenant les information
 
 ## Pré-requis
 * Environnement (au choix) :
-  * Microsoft Windows 10
-  * Linux Ubuntu 20
+  * Microsoft Windows 11
+  * Linux Ubuntu 24.04 LTS
 * Logiciels Windows :
   * Microsoft Office ou [LibreOffice](https://www.libreoffice.org/) (expérimental)
   * [Gpg4win](https://www.gpg4win.org/)
